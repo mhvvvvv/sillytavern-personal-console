@@ -1,0 +1,9 @@
+{
+  "name": "personal-console",
+  "version": "0.7.0",
+  "private": true,
+  "main": "index.cjs",
+  "scripts": {
+    "test": "node --test current-test.cjs error-test.cjs stream-test.cjs install-test.cjs"
+  }
+}

@@ -1,0 +1,18 @@
+'use strict';
+const dc=require('node:diagnostics_channel'),{randomBytes,createHmac,randomUUID}=require('node:crypto');
+const info={id:'personal-console',name:'Personal Console',description:'Session-scoped HTTP diagnostics for chat completions'};
+const start=dc.channel('http.server.request.start');
+let stop;
+async function init(router){
+ if(stop)throw Error('already initialized');
+ const salt=randomBytes(32),store=new Map();let active=true;
+ const gate=process.env.PERSONAL_CONSOLE_AUTH==='verified-door';
+ function key(r){let id;if(gate){const a=(r.headers.cookie||'').split(';').map(x=>x.trim()).filter(x=>x.startsWith('__Host-tavern='));if(a.length!==1)return;const t=a[0].slice(14);if(!/^[A-Za-z0-9_-]{43}$/.test(t))return;id='door:'+t;}else{const h=r.user?.profile?.handle;if(!h||r.session?.handle!==h||!r.user.profile.enabled||!r.user.profile.password)return;id='account:'+h;}return createHmac('sha256',salt).update(id).digest('hex');}
+ function prune(){const now=Date.now();for(const [k,v] of store)if(v.exp<=now)store.delete(k);}
+ const slots=new WeakMap();
+ function begin(r,s){if(!r.user?.profile)return;const k=key(r);if(!k)return;prune();if(!store.has(k)&&store.size>=256)store.delete(store.keys().next().value);const ts=Date.now(),id=randomUUID().slice(0,8),v={exp:ts+600000,lines:[`[${id}] 请求中…`],lastResult:null};store.set(k,v);slots.set(r,{k,id,ref:new WeakRef(v)});let stream=null,finished=false;if(r.body?.stream===true){stream=require('./stream.cjs').observer();const write=s.write,end=s.end;function tap(chunk){try{if(s.statusCode<400)stream.push(chunk);}catch{}}s.write=function(chunk,...args){tap(chunk);return write.call(this,chunk,...args);};s.end=function(chunk,...args){tap(chunk);return end.call(this,chunk,...args);};}function finish(){if(finished)return;finished=true;if(!active||store.get(k)!==v)return;if(stream&&!v.lastResult){const x=stream.finish(s.writableFinished);v.lastResult={id,...x};}v.lines=[`[${id}] ${s.writableFinished?'HTTP '+s.statusCode:'connection closed before finish'} (${Date.now()-ts} ms)`];v.exp=Date.now()+600000;}s.once('finish',finish);s.once('close',finish);}
+ const detach=await require('./errors.cjs').attach((r,text,kind='error')=>{const a=slots.get(r);if(!a)return;const v=store.get(a.k);if(v&&v===a.ref.deref())v.lastResult={id:a.id,text,kind};},begin);
+ router.get('/logs',(r,s)=>{s.set('Cache-Control','private, no-store');const k=r.user?.profile&&key(r);if(!k)return s.sendStatus(403);prune();return s.json({lines:store.get(k)?.lines||[],lastResult:store.get(k)?.lastResult||null});});
+ const timer=setInterval(prune,60000);timer.unref();stop=()=>{active=false;detach();clearInterval(timer);store.clear();stop=null;};
+}
+async function exit(){stop?.();}module.exports={info,init,exit};
