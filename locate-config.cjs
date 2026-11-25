@@ -1,0 +1,5 @@
+// Executed via node - in the selected container. Print only a verified config path.
+const f=require('node:fs'),p=require('node:path');const root=f.realpathSync('.');const found=[];
+for(const pid of f.readdirSync('/proc').filter(x=>/^\d+$/.test(x))){let cwd,args;try{cwd=f.realpathSync(`/proc/${pid}/cwd`);args=f.readFileSync(`/proc/${pid}/cmdline`,'utf8').split('\0').filter(Boolean);}catch{continue;}if(cwd!==root||!/^node(js)?$/.test(p.basename(args[0]||''))||!args.some(x=>p.resolve(cwd,x)===p.join(root,'server.js')))continue;
+if(args.some(x=>/^--global(?:=|$)/.test(x)))throw Error('global 模式请由 Agent 确认配置');let paths=[];for(let i=0;i<args.length;i++){if(args[i]==='--configPath'||args[i]==='--config-path')paths.push(args[++i]);else if(/^--config(?:Path|-path)=/.test(args[i]))paths.push(args[i].split('=').slice(1).join('='));}if(paths.length>1||paths.some(x=>!x||x.startsWith('-')))throw Error('配置参数不唯一或无效');found.push(p.resolve(root,paths[0]||'config.yaml'));}
+if(found.length!==1)throw Error('未能唯一识别酒馆进程和配置；请由 Agent 核对，不猜测');const file=f.realpathSync(found[0]);if(!f.statSync(file).isFile()||/[\x00-\x1f]/.test(file))throw Error('配置路径无效');process.stdout.write(file);

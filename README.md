@@ -4,12 +4,14 @@
 ## 安装：两种方式，选一种
 
 ### ① VPS 一键安装
-适合 **Docker Compose 管理、已在运行的酒馆**。在酒馆的 Compose 目录运行（需要 Docker Compose v2、Python 3、curl、tar，不需要 Git）。公开仓库可直接下载；私有仓库可先登录 `gh`，或用有权限的浏览器下载源码包并放到 VPS 再解压运行。不要把令牌写进命令或发给 Agent。
+在能管理本机 Docker 的 VPS 交互终端，任意目录执行（Bash、curl、tar；不需要 Git）：
 
-```sh
-(d=$(mktemp -d) && trap 'rm -rf "$d"' EXIT && { curl -fsSL https://github.com/mhvvvvv/sillytavern-personal-console/archive/refs/heads/main.tar.gz -o "$d/src.tgz" || gh api repos/mhvvvvv/sillytavern-personal-console/tarball/main > "$d/src.tgz"; } && tar -xzf "$d/src.tgz" -C "$d" --strip-components=1 && sh "$d/install-vps.sh")
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/mhvvvvv/sillytavern-personal-console/main/install.sh)
 ```
-0.7.0 默认**不重建容器**：确认后只复制服务端插件和全局面板到现有容器，执行一次 `docker restart`。不会改 Compose、挂载、登录方式和其他插件。安装前可在脚本后加 `--dry-run`。已有安装或未配置受支持的登录方式时停止。普通重启保留；若插件父目录没有持久化，未来升级镜像或由其他工具重建容器后需重新安装。要保证跨重建保留，请预先持久化两个父目录；本脚本不替你改变挂载。
+脚本识别运行中容器里的 SillyTavern 应用，而不是匹配容器名；只有一个就选中，多个则列编号。以所选酒馆进程的启动参数定位 `--configPath`（默认 `config.yaml`，支持镜像内符号链接），检测认证模式，不改配置。结构不支持时停止，请使用 Agent；不会尝试安装到别的容器。看到目标和模式后输入 `y` 才安装并重启原容器，不重建。已有安装不会覆盖。若日后外部重建且插件目录未持久化，需重新安装。
+
+预检：在同一条命令末尾加 ` --dry-run`。公开仓库才能匿名下载；脚本未输出预检/安装结果不代表成功。
 
 ### ② 让 Agent 辅助安装
 把下面一句话连同仓库访问权限交给能管理你 VPS 的 Agent（不要发送密码或令牌）：
