@@ -4,12 +4,12 @@
 ## 安装：两种方式，选一种
 
 ### ① VPS 一键安装
-在能管理本机 Docker 的 VPS 交互终端，任意目录执行（Bash、curl、tar；不需要 Git）：
+在能管理本机 Docker 的 VPS 交互终端，任意目录执行（Bash、curl、tar、Python 3；不需要 Git）：
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/mhvvvvv/sillytavern-personal-console/main/install.sh)
 ```
-脚本识别运行中容器里的 SillyTavern 应用，而不是匹配容器名；只有一个就选中，多个则列编号。以所选酒馆进程的启动参数定位 `--configPath`（默认 `config.yaml`，支持镜像内符号链接），检测认证模式，不改配置。结构不支持时停止，请使用 Agent；不会尝试安装到别的容器。看到目标和模式后输入 `y` 才安装并重启原容器，不重建。已有安装不会覆盖。若日后外部重建且插件目录未持久化，需重新安装。
+脚本识别运行中容器里的 SillyTavern 应用，而不是匹配容器名；只有一个就选中，多个则列编号。以所选酒馆进程的启动参数定位 `--configPath`（默认 `config.yaml`，支持镜像内符号链接），检测认证模式，不改配置。结构不支持时停止，请使用 Agent；不会尝试安装到别的容器。看到目标和模式后输入 `y` 才安装并重启原容器，不重建。同一条命令也用于 Docker 升级。未安装则安装；前后端与最新版完全一致则直接退出、不重启；识别到原样安装的 0.7.0/0.7.1/0.7.2，则展示版本差异并等待确认。确认后会在宿主 `~/.local/state/personal-console/backups/` 备份并校验前后端，成对替换、重启原容器、检查插件初始化；验证不通过会尝试恢复旧版并复验。遇到自定义改动、用户级重复安装、部分安装或插件目录挂载则拒绝覆盖。若日后外部重建且插件目录未持久化，需重新安装。
 
 预检：在同一条命令末尾加 ` --dry-run`。公开仓库才能匿名下载；脚本未输出预检/安装结果不代表成功。
 
@@ -18,7 +18,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/mhvvvvv/sillytavern-personal
 
 > 帮我安装「我的后台」：https://github.com/mhvvvvv/sillytavern-personal-console/tree/main 。先读 AGENTS.md，只读确认我的酒馆部署和登录方式，给出安装与回滚方案，等我确认后再修改或重启。保留数据、现有插件和认证，不输出密钥或聊天内容。
 
-已有插件要升级，或使用原生安装、Termux、1Panel、Portainer、自定义 Compose，请选此方式。
+非标准布局需要升级，或使用原生安装、Termux、1Panel、Portainer、自定义 Compose，请选此方式。
 
 ## 身份与隐私
 安装前会读取酒馆配置并报告模式：显式可信门禁优先，其次原生用户账号，再是 basicAuthMode: true。仅 Basic Auth 时无需再开原生账号：酒馆先验证 Basic 凭据，插件使用酒馆签名会话区分浏览器，不按密码、IP 或共享用户名分组。同浏览器标签页共享记录，不同浏览器分别记录。必须实际启用酒馆 Basic 中间件（listen）；关闭认证或仅在外层代理开 Basic 不会当作此模式。公网请使用 HTTPS。
