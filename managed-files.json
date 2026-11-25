@@ -33,5 +33,14 @@
     "ui/manifest.json": "3c9ed083a3e42aec7513081cef9917ba9d8b1f5e11444d3f916942140f701594",
     "ui/panel-053.js": "09f94988f8eea67d962301cd0f32ca714ea57b71ba76f9788689ab37914b1b34",
     "auth.cjs": "b5068ae98be4dbda4b0c421241553f42b0e61a5d10d8d5bb93bb99a9c12cf50a"
+  },
+  "0.8.0": {
+    "index.cjs": "97f36c522445904256052530ae0b4323d35c26681978cbc41710ab6ab9193648",
+    "errors.cjs": "bd2eaaa0d373b5dd32047c9bed714716d38117c9ac2e4a4ee7aa2d3e36d04f46",
+    "stream.cjs": "75aa55d63cf68ce5f589a9af396908f902ace815b5f272123157c3e27103ba54",
+    "package.json": "52ab120387b69edcda795f32ca32f4ac1982695cef9a81fdc76e10b4fcdcd45d",
+    "ui/manifest.json": "900cc66cadea03cff4df1a4bab97e1f25f3e924c3c5b4d135d9678c7620c364f",
+    "ui/panel-053.js": "2b877acf8ca00fac8cba05584e693142f12ae1823255fa5ae6e021822716fa46",
+    "auth.cjs": "b5068ae98be4dbda4b0c421241553f42b0e61a5d10d8d5bb93bb99a9c12cf50a"
   }
 }
