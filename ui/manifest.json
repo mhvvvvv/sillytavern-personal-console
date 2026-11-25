@@ -1,6 +1,6 @@
 {
   "display_name": "我的后台",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "author": "Personal Console",
   "loading_order": 100,
   "js": "panel-053.js",
